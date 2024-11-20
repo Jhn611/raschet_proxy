@@ -27,9 +27,9 @@ app.get('/api/get-bond-info', async (req, res) => {
             headers: {
                 Authorization: `Bearer ${API_TOKEN}`,
             },
-            params: { "idType": "INSTRUMENT_ID_TYPE_TICKER",
-                        "classCode": "TQCB",
-                        "id": ticker },
+            params: { idType: "INSTRUMENT_ID_TYPE_TICKER",
+                        classCode: "TQCB",
+                        id: ticker },
         });
         
         // Ищем облигацию среди полученных инструментов
