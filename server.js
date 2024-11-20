@@ -11,14 +11,13 @@ const BASE_URL = 'https://api-invest.tinkoff.ru/openapi';
 app.use(cors()); // Разрешить запросы с любых доменов
 
 // Прокси маршрут
-app.get('/api/*', async (req, res) => {
-    const endpoint = req.path.replace('/api/', ''); // Убираем '/api/' из пути
-    const params = req.query;
+app.get('/api/instruments', async (req, res) => {
+    const { type, query } = req.query;
 
     try {
-        const response = await axios.get(`${BASE_URL}/${endpoint}`, {
+        const response = await axios.get(`${BASE_URL}/instruments`, {
             headers: { Authorization: `Bearer ${API_TOKEN}` },
-            params,
+            params: { type, query },
         });
         res.json(response.data);
     } catch (error) {
@@ -26,6 +25,7 @@ app.get('/api/*', async (req, res) => {
         res.status(error.response?.status || 500).json({ error: error.message });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Прокси-сервер запущен на порту ${PORT}`);
