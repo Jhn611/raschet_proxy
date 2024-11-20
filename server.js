@@ -9,10 +9,10 @@ const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVq
 const BASE_URL = 'https://api-invest.tinkoff.ru/openapi';
 
 app.use(cors()); // Разрешить запросы с любых доменов
- 
+
 // Прокси маршрут
-app.get('/api/:endpoint', async (req, res) => {
-    const { endpoint } = req.params;
+app.get('/api/*', async (req, res) => {
+    const endpoint = req.path.replace('/api/', ''); // Убираем '/api/' из пути
     const params = req.query;
 
     try {
