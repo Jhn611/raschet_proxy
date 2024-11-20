@@ -9,7 +9,6 @@ const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVq
 const BASE_URL = 'https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.InstrumentsService/BondBy';
 
 app.use(cors());  // Разрешить запросы с любых доменов
-app.use(express.json()); // Для парсинга JSON в теле запроса
 
 // Прокси маршрут для получения информации по тикеру
 app.get('/api/get-bond-info', async (req, res) => {
@@ -17,12 +16,12 @@ app.get('/api/get-bond-info', async (req, res) => {
     console.log('Получен запрос на /api/get-bond-info');
 
     const { ticker } = req.query;  // Получаем тикер из параметров запроса
-
+    console.log(ticker);
     if (!ticker) {
         return res.status(400).json({ error: 'Тикер обязателен' });
     }
 
-    const data = {
+    const params = {
         idType: "INSTRUMENT_ID_TYPE_TICKER",
         classCode: "TQCB",
         id: ticker
@@ -32,12 +31,13 @@ app.get('/api/get-bond-info', async (req, res) => {
         headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
             'Content-Type': 'application/json'
-        }
+        },
+        params: params
     };
 
     try {
-        // Делаем POST запрос к Tinkoff API
-        const response = await axios.post(BASE_URL, data, config);
+        // Делаем GET запрос к Tinkoff API с параметрами в URL
+        const response = await axios.get(BASE_URL, config);
         
         // Ищем облигацию среди полученных инструментов
         const bond = response.data.instruments?.find((inst) => inst.instrumentType === 'Bond');
