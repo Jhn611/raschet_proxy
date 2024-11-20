@@ -5,38 +5,36 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_URL = 'https://invest-public-api.tinkoff.ru/rest/market/search/by-ticker';
-const TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw'; // Замените на ваш реальный токен
+const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw';  // Ваш токен от Tinkoff API
+const BASE_URL = 'https://invest-public-api.tinkoff.ru/rest/market/search/by-ticker';
 
-// Разрешаем запросы с любых доменов
-app.use(cors());
+app.use(cors());  // Разрешить запросы с любых доменов
 
-// Маршрут для получения информации об облигации
+// Прокси маршрут для получения информации по тикеру
 app.get('/api/get-bond-info', async (req, res) => {
-    const { ticker } = req.query;
+    const { ticker } = req.query;  // Получаем тикер из параметров запроса
 
     if (!ticker) {
         return res.status(400).json({ error: 'Тикер обязателен' });
     }
 
     try {
-        // Отправляем запрос к Tinkoff API для получения данных об облигации
-        const response = await axios.get(API_URL, {
+        // Делаем запрос к Tinkoff API
+        const response = await axios.get(`${BASE_URL}`, {
             headers: {
-                Authorization: `Bearer ${TOKEN}`,
+                Authorization: `Bearer ${API_TOKEN}`,
             },
-            params: {
-                ticker: ticker, // Тикер облигации
-            },
+            params: { ticker: ticker },
         });
 
+        // Ищем облигацию среди полученных инструментов
         const bond = response.data.instruments?.find((inst) => inst.instrumentType === 'Bond');
 
         if (!bond) {
             return res.status(404).json({ message: 'Облигация не найдена' });
         }
 
-        return res.json(bond); // Отправляем информацию об облигации клиенту
+        return res.json(bond);  // Отправляем информацию об облигации
     } catch (error) {
         console.error('Ошибка при запросе к Tinkoff API:', error.message);
         return res.status(error.response?.status || 500).json({ error: error.message });
@@ -45,5 +43,5 @@ app.get('/api/get-bond-info', async (req, res) => {
 
 // Запускаем сервер
 app.listen(PORT, () => {
-    console.log(`Сервер работает на порту ${PORT}`);
+    console.log(`Прокси-сервер запущен на порту ${PORT}`);
 });
