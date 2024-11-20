@@ -21,36 +21,27 @@ app.get('/api/get-bond-info', async (req, res) => {
         return res.status(400).json({ error: 'Тикер обязателен' });
     }
 
-    const params = {
+    const data = {
         idType: "INSTRUMENT_ID_TYPE_TICKER",
         classCode: "TQCB",
         id: ticker
-    };
-
-    const config = {
+      };
+      
+      const config = {
         headers: {
-            'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
-        params: params
-    };
-
-    try {
-        // Делаем GET запрос к Tinkoff API с параметрами в URL
-        const response = await axios.get(BASE_URL, config);
-        
-        // Ищем облигацию среди полученных инструментов
-        const bond = response.data.instruments?.find((inst) => inst.instrumentType === 'Bond');
-
-        if (!bond) {
-            return res.status(404).json({ message: 'Облигация не найдена' });
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json'
         }
-
-        return res.json(bond);  // Отправляем информацию об облигации
-    } catch (error) {
-        console.error('Ошибка при запросе к Tinkoff API:', error.message);
-        return res.status(error.response?.status || 500).json({ error: error.message });
-    }
+      };
+      
+      axios.post(BASE_URL, data, config)
+        .then(response => {
+          console.log('Server Response:', response.data);
+        })
+        .catch(error => {
+          console.error('Error:', error.message);
+        });
 });
 
 // Запускаем сервер
