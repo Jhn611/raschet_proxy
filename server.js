@@ -5,19 +5,21 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw'; // Замените на ваш токен
+// Токен для доступа к Tinkoff API
+const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw'; // Укажите свой токен здесь
 const BASE_URL = 'https://invest-public-api.tinkoff.ru/rest';
 
 app.use(cors()); // Разрешить запросы с любых доменов
 
-// Прокси маршрут
-app.get('/api/instruments', async (req, res) => {
-    const { type, query } = req.query;
+// Прокси маршрут для работы с Tinkoff REST API
+app.get('/api/:endpoint', async (req, res) => {
+    const { endpoint } = req.params;
+    const params = req.query;
 
     try {
-        const response = await axios.get(`${BASE_URL}/instruments`, {
+        const response = await axios.get(`${BASE_URL}/${endpoint}`, {
             headers: { Authorization: `Bearer ${API_TOKEN}` },
-            params: { type, query },
+            params,
         });
         res.json(response.data);
     } catch (error) {
@@ -26,7 +28,7 @@ app.get('/api/instruments', async (req, res) => {
     }
 });
 
-
+// Запуск сервера
 app.listen(PORT, () => {
     console.log(`Прокси-сервер запущен на порту ${PORT}`);
 });
