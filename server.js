@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw'; // Замените на ваш токен
-const BASE_URL = 'https://api-invest.tinkoff.ru/openapi';
+const BASE_URL = 'https://invest-public-api.tinkoff.ru/rest';
 
 app.use(cors()); // Разрешить запросы с любых доменов
 
