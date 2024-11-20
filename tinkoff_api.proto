@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package tinkoff;
+
+// Описание запроса для получения информации об облигации
+message GetBondInfoRequest {
+    string ticker = 1;
+}
+
+// Описание ответа с информацией об облигации
+message BondInfo {
+    string figi = 1;
+    string ticker = 2;
+    string name = 3;
+    string instrument_type = 4;
+    float price = 5;
+    string currency = 6;
+}
+
+// Описание сервиса Tinkoff API
+service TinkoffApiService {
+    rpc GetBondInfo (GetBondInfoRequest) returns (BondInfo);
+}

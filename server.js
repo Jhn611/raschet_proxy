@@ -1,50 +1,77 @@
-const express = require('express');
+const grpc = require('grpc');
+const protoLoader = require('@grpc/proto-loader');
 const axios = require('axios');
-const cors = require('cors');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+// Загрузка .proto файла
+const PROTO_PATH = './tinkoff_api.proto';
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+});
+const tinkoffProto = grpc.loadPackageDefinition(packageDefinition).tinkoff;
 
-const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw';  // Ваш токен от Tinkoff API
-const BASE_URL = 'https://invest-public-api.tinkoff.ru/rest/market/search/by-ticker';
+// Создание gRPC сервер
+const server = new grpc.Server();
 
-app.use(cors());  // Разрешить запросы с любых доменов
+// URL и токен для Tinkoff API
+const API_URL = 'https://invest-public-api.tinkoff.ru/rest/market/search/by-ticker';
+const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw';  // Укажите свой токен для API
 
-// Прокси маршрут для получения информации по тикеру
-app.get('/api/get-bond-info', async (req, res) => {
-    
-    console.log('Получен запрос на /api/get-bond-info');
-
-    const { ticker } = req.query;  // Получаем тикер из параметров запроса
+// Реализация метода для получения информации об облигации
+const getBondInfo = async (call, callback) => {
+    const ticker = call.request.ticker;
 
     if (!ticker) {
-        return res.status(400).json({ error: 'Тикер обязателен' });
+        callback({
+            code: grpc.status.INVALID_ARGUMENT,
+            details: 'Тикер обязателен'
+        });
+        return;
     }
 
     try {
-        // Делаем запрос к Tinkoff API
-        const response = await axios.get(`${BASE_URL}`, {
+        // Выполняем запрос к Tinkoff API
+        const response = await axios.get(API_URL, {
             headers: {
-                Authorization: `Bearer ${API_TOKEN}`,
+                Authorization: `Bearer ${API_TOKEN}`
             },
-            params: { ticker: ticker },
+            params: { ticker: ticker }
         });
 
-        // Ищем облигацию среди полученных инструментов
-        const bond = response.data.instruments?.find((inst) => inst.instrumentType === 'Bond');
-
+        const bond = response.data.instruments?.find(inst => inst.instrumentType === 'Bond');
+        
         if (!bond) {
-            return res.status(404).json({ message: 'Облигация не найдена' });
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: 'Облигация не найдена'
+            });
+            return;
         }
 
-        return res.json(bond);  // Отправляем информацию об облигации
+        // Ответ с данными о облигации
+        callback(null, {
+            figi: bond.figi,
+            ticker: bond.ticker,
+            name: bond.name,
+            instrument_type: bond.instrumentType,
+            price: bond.price || 0,  // Если цена не указана, то 0
+            currency: bond.currency || 'RUB'  // Если валюта не указана, то RUB
+        });
     } catch (error) {
         console.error('Ошибка при запросе к Tinkoff API:', error.message);
-        return res.status(error.response?.status || 500).json({ error: error.message });
+        callback({
+            code: grpc.status.INTERNAL,
+            details: 'Ошибка при запросе к Tinkoff API'
+        });
     }
-});
+};
 
-// Запускаем сервер
-app.listen(PORT, () => {
-    console.log(`Прокси-сервер запущен на порту ${PORT}`);
-});
+// Добавление метода к gRPC серверу
+server.addService(tinkoffProto.TinkoffApiService.service, { GetBondInfo: getBondInfo });
+
+// Запуск сервера на порту 50051
+server.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure());
+console.log('gRPC сервер запущен на порту 50051');
