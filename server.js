@@ -37,7 +37,8 @@ app.get('/api/get-bond-info', async (req, res) => {
       
       axios.post(BASE_URL, data, config)
         .then(response => {
-          console.log('Server Response:', response.data);
+          console.log('success!');
+          return res.json(response.data);
         })
         .catch(error => {
           console.error('Error:', error.message);
