@@ -21,10 +21,16 @@ app.get('/api/get-bond-info', async (req, res) => {
     if (!ticker) {
         return res.status(400).json({ error: 'Тикер обязателен' });
     }
-
+    const classCode = "TQCB";
+    if (ticker.startsWith("RU")) {
+      classCode = "TQCB";
+    }else{
+      classCode = "TQOB";
+    }
+    
     const data = {
         idType: "INSTRUMENT_ID_TYPE_TICKER",
-        classCode: "TQCB",
+        classCode: classCode,
         id: ticker
       };
       
