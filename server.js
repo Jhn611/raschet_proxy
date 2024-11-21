@@ -8,7 +8,14 @@ const PORT = process.env.PORT || 3000;
 const API_TOKEN = 't.OqqpSBrV7ymA93LZsizfGdefgMpONaHlXAnh1XghPiILSM8ZzzrMPQ7xbVqgGSEMOekNHNcF5L07AzOY06V8yw';
 const BASE_URL = 'https://invest-public-api.tinkoff.ru/rest';
 
-app.use(cors());  // Разрешить запросы с любых доменов
+const corsOptions = {
+  origin: '*', // Разрешить запросы с любых источников
+  methods: ['GET', 'POST'], // Разрешённые HTTP-методы
+  allowedHeaders: ['Content-Type', 'Authorization'], // Разрешённые заголовки
+};
+
+app.use(cors(corsOptions));
+//app.use(cors());  // Разрешить запросы с любых доменов
 
 // Прокси маршрут для получения информации по тикеру
 app.get('/api/get-bond-info', async (req, res) => {
@@ -48,7 +55,10 @@ app.get('/api/get-bond-info', async (req, res) => {
           return res.json(response.data);
         })
         .catch(error => {
-          console.error('Error:', error.message);
+          console.error('Ошибка при запросе:', error.message);
+          res.status(error.response?.status || 500).json({
+            error: error.response?.data || 'Ошибка при запросе к Tinkoff API',
+          });
         });
 });
 
@@ -84,7 +94,10 @@ app.get('/api/get-bond-coupon', async (req, res) => {
         return res.json(response.data);
       })
       .catch(error => {
-        console.error('Error:', error.message);
+        console.error('Ошибка при запросе:', error.message);
+        res.status(error.response?.status || 500).json({
+          error: error.response?.data || 'Ошибка при запросе к Tinkoff API',
+        });
       });
 });
 
