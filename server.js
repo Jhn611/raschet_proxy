@@ -21,7 +21,7 @@ app.get('/api/get-bond-info', async (req, res) => {
     if (!ticker) {
         return res.status(400).json({ error: 'Тикер обязателен' });
     }
-    const classCode = "TQCB";
+    let classCode = "TQCB";
     if (ticker.startsWith("RU")) {
       classCode = "TQCB";
     }else{
