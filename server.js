@@ -19,7 +19,7 @@ app.use(cors(corsOptions));
 
 app.get('/api', async (req, res) => {
   console.log('Получен запрос на /api');
-  return "Сервер доступен!";
+  return res.status(200).json({ alert: 'Сервер доступен!' });
 });
 
 // Прокси маршрут для получения информации по тикеру
