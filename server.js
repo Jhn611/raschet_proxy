@@ -17,6 +17,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 //app.use(cors());  // Разрешить запросы с любых доменов
 
+app.get('/api', async (req, res) => {
+  console.log('Получен запрос на /api');
+  return "Сервер доступен!";
+});
+
 // Прокси маршрут для получения информации по тикеру
 app.get('/api/get-bond-info', async (req, res) => {
     const URL = '/tinkoff.public.invest.api.contract.v1.InstrumentsService/BondBy';
